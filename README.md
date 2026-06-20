@@ -25,8 +25,8 @@ Controle de versionamento avançado com Git (commits organizados e tags).
 
 ## Informações Gerais
 
-- Nome:
-- Matricula:
+- Nome: Jose Venancio
+- Matricula: 908181
 
 ## Prints do trabalho
 

@@ -1,13 +1,220 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="script.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <title>CineTop - Catálogo de Filmes</title>
+    <script src="./assets/js/app.js" defer></script>
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-    
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🎬</span>
+                <span>CineTop</span>
+            </div>
+            <nav class="nav">
+                <a href="/index.html" class="nav-link active">Início</a>
+                <a href="/detalhes.html" class="nav-link">Detalhes</a>
+            </nav>
+            <button class="btn-novo" onclick="abrirModal()">+ Novo Filme</button>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <h1>Catálogo de Filmes</h1>
+            <p>Descubra os melhores filmes de todos os tempos</p>
+        </section>
+
+        <section class="filmes-grid" id="filmesGrid">
+            <p class="erro-msg">Carregando filmes...</p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 CineTop &mdash; Catálogo de Filmes</p>
+    </footer>
+
+    <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+    <!-- Modal: Novo Filme -->
+    <div class="modal-overlay" id="modalOverlay" onclick="fecharModalFora(event)">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+            <div class="modal-header">
+                <h3 id="modalTitulo">Novo Filme</h3>
+                <button class="modal-close" onclick="fecharModal()" aria-label="Fechar">&#x2715;</button>
+            </div>
+            <form id="formNovoFilme" novalidate>
+                <div class="form-group">
+                    <label for="inputTitulo">Título</label>
+                    <input type="text" id="inputTitulo" placeholder="Ex: O Senhor dos Anéis" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inputAno">Ano</label>
+                        <input type="number" id="inputAno" placeholder="2024" min="1888" max="2026" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputNota">Nota (0–10)</label>
+                        <input type="number" id="inputNota" placeholder="8.5" min="0" max="10" step="0.1" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputGenero">Gênero</label>
+                    <select id="inputGenero" required>
+                        <option value="">Selecione um gênero</option>
+                        <option>Ação</option>
+                        <option>Animação</option>
+                        <option>Comédia</option>
+                        <option>Crime</option>
+                        <option>Drama</option>
+                        <option>Ficção Científica</option>
+                        <option>Romance</option>
+                        <option>Suspense</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inputDiretor">Diretor</label>
+                    <input type="text" id="inputDiretor" placeholder="Ex: Christopher Nolan" required>
+                </div>
+                <div class="form-group">
+                    <label for="inputSinopse">Sinopse</label>
+                    <textarea id="inputSinopse" rows="3" placeholder="Breve descrição do filme..." required></textarea>
+                </div>
+                <p class="form-erro" id="formErro"></p>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary-form" onclick="fecharModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="btnSalvar">Salvar Filme</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        async function carregarFilmes() {
+            const grid = document.getElementById('filmesGrid');
+            try {
+                const filmes = await listarFilmes();
+                renderizarFilmes(filmes);
+            } catch (erro) {
+                grid.innerHTML = `
+                    <p class="erro-msg">
+                        ⚠️ Erro ao carregar filmes.<br>
+                        Verifique se o JSON Server está rodando:<br>
+                        <code>npm start</code>
+                    </p>`;
+            }
+        }
+
+        function renderizarFilmes(filmes) {
+            const grid = document.getElementById('filmesGrid');
+
+            if (!filmes || filmes.length === 0) {
+                grid.innerHTML = `
+                    <div class="sem-filmes">
+                        <span class="icone">🎬</span>
+                        <strong>Nenhum filme cadastrado ainda.</strong><br>
+                        <span>Clique em <em>+ Novo Filme</em> para começar!</span>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = filmes.map(filme => {
+                const corPoster = getCorGenero(filme.genero);
+                const icone     = getIconeGenero(filme.genero);
+                return `
+                <div class="card" id="card-${filme.id}">
+                    <div class="card-poster" style="background: ${corPoster}">
+                        <span class="card-genero-icon">${icone}</span>
+                        <button
+                            class="btn-excluir-card"
+                            onclick="confirmarExclusao(${filme.id}, '${filme.titulo.replace(/'/g, "\\'")}')"
+                            title="Excluir filme"
+                            aria-label="Excluir ${filme.titulo}"
+                        >🗑</button>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-titulo">${filme.titulo}</h3>
+                        <p class="card-meta">${filme.ano} &bull; ${filme.genero}</p>
+                        <p class="card-diretor">Dir. ${filme.diretor}</p>
+                        <p class="card-sinopse">${filme.sinopse}</p>
+                        <div class="card-footer">
+                            <span class="card-nota">⭐ ${filme.nota}</span>
+                            <a href="/detalhes.html?id=${filme.id}" class="btn-detalhes">Ver Detalhes</a>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function confirmarExclusao(id, titulo) {
+            if (!confirm(`Excluir o filme "${titulo}"?\nEssa ação não pode ser desfeita.`)) return;
+            try {
+                await excluirFilme(id);
+                mostrarToast('Filme excluído com sucesso!', 'info');
+                await carregarFilmes();
+            } catch (erro) {
+                mostrarToast('Erro ao excluir o filme.', 'erro');
+            }
+        }
+
+        function abrirModal() {
+            document.getElementById('modalOverlay').classList.add('show');
+            document.getElementById('inputTitulo').focus();
+        }
+
+        function fecharModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+            document.getElementById('formNovoFilme').reset();
+            document.getElementById('formErro').textContent = '';
+        }
+
+        function fecharModalFora(event) {
+            if (event.target === document.getElementById('modalOverlay')) fecharModal();
+        }
+
+        document.getElementById('formNovoFilme').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const erroEl = document.getElementById('formErro');
+            erroEl.textContent = '';
+
+            const titulo  = document.getElementById('inputTitulo').value.trim();
+            const ano     = parseInt(document.getElementById('inputAno').value);
+            const nota    = parseFloat(document.getElementById('inputNota').value);
+            const genero  = document.getElementById('inputGenero').value;
+            const diretor = document.getElementById('inputDiretor').value.trim();
+            const sinopse = document.getElementById('inputSinopse').value.trim();
+
+            if (!titulo || !ano || isNaN(nota) || !genero || !diretor || !sinopse) {
+                erroEl.textContent = 'Preencha todos os campos obrigatórios.';
+                return;
+            }
+            if (nota < 0 || nota > 10) {
+                erroEl.textContent = 'A nota deve ser entre 0 e 10.';
+                return;
+            }
+
+            const btn = document.getElementById('btnSalvar');
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+
+            try {
+                await criarFilme({ titulo, ano, genero, diretor, sinopse, nota });
+                fecharModal();
+                mostrarToast('Filme adicionado com sucesso! 🎬', 'info');
+                await carregarFilmes();
+            } catch (erro) {
+                erroEl.textContent = 'Erro ao salvar o filme. Tente novamente.';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Salvar Filme';
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', carregarFilmes);
+    </script>
 </body>
 </html>

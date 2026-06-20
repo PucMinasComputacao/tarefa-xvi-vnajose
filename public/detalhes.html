@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Filme - CineTop</title>
+    <script src="./assets/js/app.js" defer></script>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🎬</span>
+                <span>CineTop</span>
+            </div>
+            <nav class="nav">
+                <a href="/index.html" class="nav-link">Início</a>
+                <a href="/detalhes.html" class="nav-link active">Detalhes</a>
+            </nav>
+            <a href="/index.html" class="btn-voltar">&#8592; Voltar ao Catálogo</a>
+        </div>
+    </header>
+
+    <main class="main">
+        <div id="detalhesContainer">
+            <p class="erro-msg">Carregando...</p>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 CineTop &mdash; Catálogo de Filmes</p>
+    </footer>
+
+    <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+    <script>
+        let filmeAtual = null;
+
+        async function iniciar() {
+            const id = getIdDaUrl();
+            if (!id) {
+                document.getElementById('detalhesContainer').innerHTML =
+                    '<p class="erro-msg">⚠️ Nenhum filme selecionado.<br><a href="/index.html" style="color:var(--accent)">← Voltar ao catálogo</a></p>';
+                return;
+            }
+            try {
+                filmeAtual = await obterFilme(id);
+                renderizarDetalhes(filmeAtual);
+            } catch (erro) {
+                document.getElementById('detalhesContainer').innerHTML =
+                    '<p class="erro-msg">⚠️ Filme não encontrado ou servidor offline.<br><a href="/index.html" style="color:var(--accent)">← Voltar ao catálogo</a></p>';
+            }
+        }
+
+        function renderizarDetalhes(filme) {
+            const corPoster = getCorGenero(filme.genero);
+            const icone     = getIconeGenero(filme.genero);
+
+            document.title = `${filme.titulo} - CineTop`;
+
+            document.getElementById('detalhesContainer').innerHTML = `
+                <div class="detalhe-card">
+                    <div class="detalhe-poster" style="background: ${corPoster}">
+                        <span class="detalhe-icone">${icone}</span>
+                        <span class="detalhe-nota">⭐ ${filme.nota}</span>
+                    </div>
+                    <div class="detalhe-info">
+                        <h2 class="detalhe-titulo">${filme.titulo}</h2>
+                        <p class="detalhe-meta">
+                            <span class="badge-genero">${filme.genero}</span>
+                            <span>${filme.ano}</span>
+                        </p>
+                        <p class="detalhe-diretor">Dir. <strong>${filme.diretor}</strong></p>
+                        <p class="detalhe-sinopse">${filme.sinopse}</p>
+                        <div class="detalhe-acoes">
+                            <button class="btn-editar" onclick="mostrarFormEdicao()">✏️ Editar</button>
+                            <button class="btn-excluir" onclick="confirmarExclusao()">🗑 Excluir</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulário de edição (oculto por padrão) -->
+                <div class="form-edicao" id="formEdicaoContainer" style="display:none">
+                    <h3 class="form-edicao-titulo">Editar Filme</h3>
+                    <form id="formEdicao" novalidate>
+                        <div class="form-group">
+                            <label for="editTitulo">Título</label>
+                            <input type="text" id="editTitulo" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editAno">Ano</label>
+                                <input type="number" id="editAno" min="1888" max="2026" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editNota">Nota (0–10)</label>
+                                <input type="number" id="editNota" min="0" max="10" step="0.1" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editGenero">Gênero</label>
+                            <select id="editGenero" required>
+                                <option>Ação</option>
+                                <option>Animação</option>
+                                <option>Comédia</option>
+                                <option>Crime</option>
+                                <option>Drama</option>
+                                <option>Ficção Científica</option>
+                                <option>Romance</option>
+                                <option>Suspense</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDiretor">Diretor</label>
+                            <input type="text" id="editDiretor" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editSinopse">Sinopse</label>
+                            <textarea id="editSinopse" rows="3" required></textarea>
+                        </div>
+                        <p class="form-erro" id="editErro"></p>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary-form" onclick="cancelarEdicao()">Cancelar</button>
+                            <button type="submit" class="btn-primary" id="btnAtualizar">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>`;
+
+            document.getElementById('formEdicao').addEventListener('submit', salvarEdicao);
+        }
+
+        function mostrarFormEdicao() {
+            const f = filmeAtual;
+            document.getElementById('editTitulo').value  = f.titulo;
+            document.getElementById('editAno').value     = f.ano;
+            document.getElementById('editNota').value    = f.nota;
+            document.getElementById('editGenero').value  = f.genero;
+            document.getElementById('editDiretor').value = f.diretor;
+            document.getElementById('editSinopse').value = f.sinopse;
+
+            document.getElementById('formEdicaoContainer').style.display = 'block';
+            document.getElementById('editTitulo').focus();
+            document.getElementById('formEdicaoContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelarEdicao() {
+            document.getElementById('formEdicaoContainer').style.display = 'none';
+            document.getElementById('editErro').textContent = '';
+        }
+
+        async function salvarEdicao(e) {
+            e.preventDefault();
+            const erroEl = document.getElementById('editErro');
+            erroEl.textContent = '';
+
+            const titulo  = document.getElementById('editTitulo').value.trim();
+            const ano     = parseInt(document.getElementById('editAno').value);
+            const nota    = parseFloat(document.getElementById('editNota').value);
+            const genero  = document.getElementById('editGenero').value;
+            const diretor = document.getElementById('editDiretor').value.trim();
+            const sinopse = document.getElementById('editSinopse').value.trim();
+
+            if (!titulo || !ano || isNaN(nota) || !genero || !diretor || !sinopse) {
+                erroEl.textContent = 'Preencha todos os campos.';
+                return;
+            }
+            if (nota < 0 || nota > 10) {
+                erroEl.textContent = 'A nota deve ser entre 0 e 10.';
+                return;
+            }
+
+            const btn = document.getElementById('btnAtualizar');
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+
+            try {
+                filmeAtual = await atualizarFilme(filmeAtual.id, { titulo, ano, genero, diretor, sinopse, nota });
+                mostrarToast('Filme atualizado com sucesso! ✅', 'info');
+                renderizarDetalhes(filmeAtual);
+            } catch (erro) {
+                erroEl.textContent = 'Erro ao atualizar. Tente novamente.';
+                btn.disabled = false;
+                btn.textContent = 'Salvar Alterações';
+            }
+        }
+
+        async function confirmarExclusao() {
+            if (!confirm(`Excluir "${filmeAtual.titulo}"?\nEssa ação não pode ser desfeita.`)) return;
+            try {
+                await excluirFilme(filmeAtual.id);
+                mostrarToast('Filme excluído!', 'info');
+                setTimeout(() => { window.location.href = '/index.html'; }, 1200);
+            } catch (erro) {
+                mostrarToast('Erro ao excluir o filme.', 'erro');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', iniciar);
+    </script>
+</body>
+</html>

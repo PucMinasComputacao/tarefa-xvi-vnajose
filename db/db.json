@@ -1,0 +1,58 @@
+{
+  "filmes": [
+    {
+      "id": 1,
+      "titulo": "A Origem",
+      "ano": 2010,
+      "genero": "Ficção Científica",
+      "diretor": "Christopher Nolan",
+      "sinopse": "Um ladrão especialista em roubo de segredos corporativos através da tecnologia de compartilhamento de sonhos recebe a tarefa inversa de plantar uma ideia na mente de um CEO.",
+      "nota": 8.8
+    },
+    {
+      "id": 2,
+      "titulo": "O Poderoso Chefão",
+      "ano": 1972,
+      "genero": "Crime",
+      "diretor": "Francis Ford Coppola",
+      "sinopse": "A história épica da família Corleone, uma poderosa família da máfia americana, e a ascensão de seu filho mais novo ao poder.",
+      "nota": 9.2
+    },
+    {
+      "id": 3,
+      "titulo": "Interestelar",
+      "ano": 2014,
+      "genero": "Ficção Científica",
+      "diretor": "Christopher Nolan",
+      "sinopse": "Uma equipe de exploradores viaja através de um buraco de minhoca no espaço na tentativa de garantir a sobrevivência da humanidade.",
+      "nota": 8.7
+    },
+    {
+      "id": 4,
+      "titulo": "Parasita",
+      "ano": 2019,
+      "genero": "Drama",
+      "diretor": "Bong Joon-ho",
+      "sinopse": "A família Kim, todos desempregados, envolve-se gradualmente com a abastada família Park, levando a uma série de eventos imprevisíveis.",
+      "nota": 8.5
+    },
+    {
+      "id": 5,
+      "titulo": "Coringa",
+      "ano": 2019,
+      "genero": "Drama",
+      "diretor": "Todd Phillips",
+      "sinopse": "O comediante fracassado Arthur Fleck encontra sua vida desmoronando ao redor dele enquanto a decadência da sociedade alimenta sua descida à loucura.",
+      "nota": 8.4
+    },
+    {
+      "id": 6,
+      "titulo": "De Volta para o Futuro",
+      "ano": 1985,
+      "genero": "Ficção Científica",
+      "diretor": "Robert Zemeckis",
+      "sinopse": "Marty McFly, um adolescente de 17 anos, é acidentalmente enviado de 1985 para 1955 em uma máquina do tempo construída por seu amigo cientista, o Dr. Emmett Brown.",
+      "nota": 8.5
+    }
+  ]
+}
