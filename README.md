@@ -30,9 +30,8 @@ Controle de versionamento avançado com Git (commits organizados e tags).
 
 ## Prints do trabalho
 
-<<  COLOQUE A IMAGEM - TELA DE CARDS DE PRODUTOS - AQUI >>
+![Página dos Cards](public/assets/images/card.png)
 
-<<  COLOQUE A IMAGEM - TELA DE DETALHE DO PRODUTO - AQUI >>
+![Página de Detalhes](public/assets/images/detalhes.png)
 
-<<  COLOQUE A IMAGEM - TELA DO CONSOLE - AQUI >>
-
+![Página dos Console](public/assets/images/console.png)
